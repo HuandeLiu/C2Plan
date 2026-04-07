@@ -70,7 +70,7 @@ cd model
 sh script_train.sh
 # 模型将保存到 ../ckpts/ 目录
 ```
-
+预训练模型：[model](https://drive.google.com/file/d/1eJ_fwvR0nf-fL3FstTHydzEdJztbsjTU/view?usp=drive_link)
 ### 4. 边界图导出
 
 ```bash
