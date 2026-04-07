@@ -1,0 +1,564 @@
+/*  全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    color: #333333;
+    line-height: 1.6;
+}
+
+#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 顶部操作区 */
+.header {
+    background: linear-gradient(135deg, #165DFF 0%, #0e42c2 100%);
+    color: white;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.header-buttons .el-button {
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.header-buttons .el-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 主内容区 */
+.main-content {
+    flex: 1;
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+    max-width: 1800px; /* 增加最大宽度以适应三列 */
+    margin: 0 auto;
+    width: 100%;
+    min-height: 0; /* 重要：允许内容区收缩 */
+    align-items: stretch; /* 使三列等高 */
+}
+
+/* 左侧区域 */
+.left-area {
+    flex: 0 0 35%; /* 左侧占30% */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 940px; /* 2个320px区域 + 20px间隙 */
+}
+
+/* 中间区域 */
+.center-area {
+    flex: 0 0 40%; /* 中间占40% */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 940px; /* 2个320px区域 + 20px间隙 */
+}
+
+/* 右侧区域 */
+.right-area {
+    flex: 0 0 25%; /* 右侧占30% */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 940px; /* 2个340px区域 + 20px间隙 */
+}
+
+/* 配置区块 */
+.config-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid #165DFF;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 隐藏内部溢出 */
+    height: 460px; /* 固定高度，不随内容变化 */
+}
+
+.config-section h2 {
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: #165DFF;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0; /* 防止标题被压缩 */
+}
+
+.section-title {
+    padding-bottom: 8px;
+    border-bottom: 2px solid #165DFF;
+}
+
+/* 上传组件 */
+.upload-demo {
+    margin-bottom: 20px;
+}
+
+.image-preview {
+    margin-top: 20px;
+    text-align: center;
+    overflow-y: auto; /* 添加滚动条 */
+    height: calc(100% - 100px); /* 固定高度：父容器高度减去标题和上传按钮高度 */
+}
+
+.image-preview img {
+    max-width: 100%;
+    max-height: 150px;
+    border: 2px solid #e4e7ed;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+.image-preview p {
+    margin-top: 8px;
+    color: #666;
+    font-size: 14px;
+}
+
+/* 表格控件 */
+.table-controls {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0; /* 防止控件被压缩 */
+}
+
+.table-container {
+    overflow-x: auto;
+    overflow-y: auto; /* 添加垂直滚动 */
+    height: calc(100% - 80px); /* 固定高度：父容器高度减去标题和按钮高度 */
+}
+
+.room-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    table-layout: fixed;
+    min-height: 100px; /* 确保表格有最小高度 */
+}
+
+.room-table th {
+    background-color: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #e4e7ed;
+}
+
+.room-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e4e7ed;
+    vertical-align: top;
+}
+
+/* 调整表格列宽 */
+.room-table th:nth-child(1), /* 房间序号 */
+.room-table td:nth-child(1) {
+    width: 40px;
+}
+
+.room-table th:nth-child(2), /* 房间类型 */
+.room-table td:nth-child(2) {
+    width: 85px;
+}
+
+.room-table th:nth-child(3), /* 拐点数量 */
+.room-table td:nth-child(3) {
+    width: 100px;
+}
+
+.room-table th:nth-child(4), /* 面积占比 */
+.room-table td:nth-child(4) {
+    width: 100px;
+}
+
+.room-table th:nth-child(5), /* 操作 */
+.room-table td:nth-child(5) {
+    width: 70px;
+}
+
+.room-table tbody tr:hover {
+    background-color: #f0f7ff;
+}
+
+.room-table tbody tr.is-door {
+    background-color: #f8f9fa;
+}
+
+.room-table .el-select,
+.room-table .el-input-number {
+    width: 100%;
+}
+
+/* 连接关系配置 */
+.connection-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    flex-shrink: 0; /* 防止控件被压缩 */
+}
+
+.connection-arrow {
+    font-size: 20px;
+    color: #165DFF;
+    font-weight: bold;
+}
+
+.connections-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto; /* 添加滚动条 */
+    height: calc(100% - 120px); /* 固定高度：父容器高度减去标题和控件高度 */
+}
+
+.connection-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #36D399;
+}
+
+.connection-card:hover {
+    background-color: #f0f7ff;
+}
+
+/* 预览区块 */
+.preview-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 隐藏内部溢出 */
+    height: 460px; /* 固定高度，不随内容变化 */
+}
+
+.preview-section h2 {
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #333;
+    border-bottom: 1px solid #e4e7ed;
+    padding-bottom: 8px;
+}
+
+.json-preview-section {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 隐藏内部溢出 */
+    flex: 1; /* 占据可用空间 */
+}
+
+.json-editor-controls {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0; /* 防止控件被压缩 */
+}
+
+.json-preview {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    height: calc(100% - 60px); /* 固定高度：父容器高度减去标题和控制按钮高度 */
+}
+
+.json-textarea {
+    flex: 1;
+    width: 100%;
+    border: none;
+    padding: 15px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    background-color: #f8f9fa;
+    color: #333;
+    resize: none;
+    outline: none;
+    white-space: pre;
+    overflow: auto;
+}
+
+.json-textarea:focus {
+    background-color: white;
+    box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1);
+}
+
+.json-preview pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    min-height: 200px;
+}
+
+.json-preview .json-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #999;
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+}
+
+.json-preview .json-error {
+    color: #f53f3f;
+    padding: 20px;
+    background-color: #fff2f0;
+    border-radius: 4px;
+    border-left: 3px solid #f53f3f;
+}
+
+/* JSON语法高亮 */
+.json-preview pre {
+    color: #333;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.json-preview pre span.json-key {
+    color: #165DFF;
+    font-weight: bold;
+}
+
+.json-preview pre span.json-string {
+    color: #36D399;
+}
+
+.json-preview pre span.json-number {
+    color: #FF7D00;
+}
+
+.json-preview pre span.json-boolean {
+    color: #D91AD9;
+}
+
+.json-preview pre span.json-null {
+    color: #999;
+}
+
+/* 拓扑图 */
+.topology-container {
+    position: relative;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    background-color: white;
+    height: calc(100% - 40px); /* 固定高度：父容器高度减去标题高度 */
+    overflow: auto; /* 添加滚动条 */
+}
+
+.tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-width: 300px;
+    font-size: 12px;
+}
+
+.tooltip h4 {
+    margin-bottom: 5px;
+    color: #165DFF;
+}
+
+/* 生成结果 */
+.generation-result {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    height: calc(100% - 40px); /* 固定高度：父容器高度减去标题高度 */
+    overflow: auto; /* 添加滚动条 */
+}
+
+.result-placeholder {
+    color: #999;
+    font-size: 14px;
+}
+
+.result-generating {
+    width: 100%;
+}
+
+.result-generating .el-progress {
+    margin-bottom: 20px;
+}
+
+.result-success {
+    width: 100%;
+}
+
+.generated-image {
+    max-width: 100%;
+    max-height: 400px;
+    border: 2px solid #e4e7ed;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.result-failed {
+    width: 100%;
+}
+
+.error-message {
+    color: #f53f3f;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #fff2f0;
+    border-radius: 4px;
+    border-left: 3px solid #f53f3f;
+}
+
+/* 底部备注区 */
+.footer {
+    background-color: white;
+    border-top: 1px solid #e4e7ed;
+    padding: 20px 40px;
+    margin-top: auto;
+}
+
+.footer-content {
+    max-width: 1800px;
+    margin: 0 auto;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.8;
+}
+
+.footer-content p {
+    margin-bottom: 8px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1400px) {
+    .main-content {
+        max-width: 1400px;
+    }
+
+    .left-area,
+    .center-area,
+    .right-area {
+        flex: 0 0 32%; /* 在小屏幕上稍微调整宽度 */
+    }
+}
+
+@media (max-width: 1200px) {
+    .main-content {
+        flex-direction: column;
+        max-width: 100%;
+    }
+
+    .left-area,
+    .center-area,
+    .right-area {
+        width: 100%;
+        flex: 0 0 auto;
+        min-height: 500px; /* 在竖屏模式下减少最小高度 */
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .header-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .connection-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .connection-arrow {
+        transform: rotate(90deg);
+    }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.config-section,
+.preview-section {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

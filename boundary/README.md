@@ -1,0 +1,1 @@
+将 ../dataprocess/rplan_json 路径下的json数据中提取出房间边界，并保存为png格式

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平面图生成系统</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/element-plus"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue3-json-viewer@3/dist/index.global.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue3-json-viewer@3/dist/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 顶部操作区 -->
+        <div class="header">
+            <h1>平面图生成系统</h1>
+            <div class="header-buttons">
+                <el-button type="warning" @click="resetAll">重置</el-button>
+                <el-button type="info" @click="previewJson">预览 JSON</el-button>
+                <el-button type="primary" @click="saveJson" :disabled="!isValid">
+                    保存 JSON
+                    <el-tooltip v-if="!isValid && validationErrors.length > 0" effect="dark" placement="bottom">
+                        <template #content>
+                            <div style="max-width: 300px;">
+                                <p style="margin: 0 0 5px 0; font-weight: bold;">校验错误:</p>
+                                <p v-for="error in validationErrors" :key="error" style="margin: 0 0 3px 0; color: #f53f3f;">
+                                    • {{ error }}
+                                </p>
+                            </div>
+                        </template>
+                        <span style="margin-left: 5px;">❌</span>
+                    </el-tooltip>
+                </el-button>
+                <el-button type="success" @click="generateFloorPlan" > <!--:disabled="!isValid || isGenerating">-->
+                    {{ isGenerating ? '生成中...' : '生成平面图' }}
+                    <el-tooltip v-if="!isValid && validationErrors.length > 0" effect="dark" placement="bottom">
+                        <template #content>
+                            <div style="max-width: 300px;">
+                                <p style="margin: 0 0 5px 0; font-weight: bold;">校验错误:</p>
+                                <p v-for="error in validationErrors" :key="error" style="margin: 0 0 3px 0; color: #f53f3f;">
+                                    • {{ error }}
+                                </p>
+                            </div>
+                        </template>
+                        <span style="margin-left: 5px;">❌</span>
+                    </el-tooltip>
+                </el-button>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 左侧区域：房间属性配置、房间连接关系配置 -->
+            <div class="left-area">
+                <!-- 房间属性配置 -->
+                <div class="config-section">
+                    <h2><span class="section-title">房间属性配置</span></h2>
+                    <div class="table-controls">
+                        <el-button type="primary" @click="addRoom">添加房间</el-button>
+                        <el-button type="info" @click="calculateProportions">批量计算占比</el-button>
+                    </div>
+                    <div class="table-container">
+                        <table class="room-table">
+                            <thead>
+                                <tr>
+                                    <th>序号</th>
+                                    <th>类型</th>
+                                    <th>拐点数量</th>
+                                    <th>面积占比</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(room, index) in rooms" :key="index" :class="{ 'is-door': room.type === 15 || room.type === 17 }">
+                                    <td>{{ index }}</td>
+                                    <td>
+                                        <!-- 前门 15 / 内门 17：显示禁用的下拉框 -->
+                                        <template v-if="room.type === 15 || room.type === 17">
+                                            <el-select v-model="room.type" disabled size="small">
+                                                <el-option
+                                                    :value="room.type"
+                                                    :label="room.type === 15 ? '15 - 前门' : '17 - 内门'"
+                                                ></el-option>
+                                            </el-select>
+                                        </template>
+
+                                        <!-- 其他类型：正常可选择 -->
+                                        <template v-else>
+                                            <el-select v-model="room.type" size="small">
+                                                <el-option
+                                                    v-for="opt in roomTypeOptions"
+                                                    :key="opt.value"
+                                                    :label="opt.label"
+                                                    :value="opt.value"
+                                                ></el-option>
+                                            </el-select>
+                                        </template>
+                                    </td>
+                                    <td>
+                                        <el-input-number v-model="room.corners" :min="4" :disabled="room.type === 15 || room.type === 17"></el-input-number>
+                                    </td>
+                                    <td>
+                                        <el-input-number v-model="room.areaRate" :min="0" :max="1" :step="0.01" :precision="2" :disabled="room.type === 15 || room.type === 17"></el-input-number>
+                                    </td>
+                                    <td>
+                                        <el-button type="danger" size="small" @click="removeRoom(index)" :disabled="index === rooms.length - 1">删除</el-button>
+<!--                                        <el-button type="warning" size="small" @click="setAsFrontDoor(index)" :disabled="room.type === 15 || room.type === 17 || hasFrontDoor">设为前门</el-button>-->
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 房间连接关系配置 -->
+                <div class="config-section">
+                    <h2><span class="section-title">房间连接关系配置</span></h2>
+                    <div class="connection-controls">
+                        <el-select v-model="connectionRoomA" placeholder="选择房间A" style="width: 150px;">
+                            <el-option v-for="room in nonDoorRooms" :key="room.index" :label="`房间${room.index}`" :value="room.index"></el-option>
+                        </el-select>
+                        <span class="connection-arrow">↔</span>
+                        <el-select v-model="connectionRoomB" placeholder="选择房间B" style="width: 150px;">
+                            <el-option v-for="room in nonDoorRooms" :key="room.index" :label="`房间${room.index}`" :value="room.index"></el-option>
+                        </el-select>
+                        <el-button type="primary" @click="createConnection" :disabled="!canCreateConnection">创建内门并绑定连接</el-button>
+                    </div>
+
+                    <div class="connections-list">
+                        <div v-for="(conn, index) in connections" :key="index" class="connection-card">
+                            <span>房间{{ conn.roomA}} - 内门{{ conn.doorIndex}} - 房间{{ conn.roomB}}</span>
+                            <el-button type="danger" size="small" @click="removeConnection(index)">删除</el-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中间区域：房间连接关系预览、生成结果 -->
+            <div class="center-area">
+                <!-- 拓扑图预览 -->
+                <div class="preview-section">
+                    <h2>房间连接关系预览</h2>
+                    <div class="topology-container" ref="topologyContainer">
+                        <svg :width="topologyWidth" :height="topologyHeight">
+                            <!-- 房间节点 -->
+                            <circle v-for="node in topologyNodes"
+                                :key="node.id"
+                                :cx="node.x"
+                                :cy="node.y"
+                                :r="node.radius"
+                                :fill="node.color"
+                                @mouseover="showNodeTooltip(node)"
+                                @mouseout="hideTooltip"
+                            />
+                            <!-- 门节点 -->
+                            <circle v-for="door in topologyDoors"
+                                :key="door.id"
+                                :cx="door.x"
+                                :cy="door.y"
+                                :r="door.radius"
+                                :fill="door.color"
+                                @mouseover="showDoorTooltip(door)"
+                                @mouseout="hideTooltip"
+                            />
+                            <!-- 连接线 -->
+                            <line v-for="link in topologyLinks"
+                                :key="link.id"
+                                :x1="link.source.x"
+                                :y1="link.source.y"
+                                :x2="link.target.x"
+                                :y2="link.target.y"
+                                :stroke="link.color"
+                                stroke-width="2"
+                                @mouseover="showLinkTooltip(link)"
+                                @mouseout="hideTooltip"
+                            />
+                        </svg>
+                        <div v-if="tooltip.visible" class="tooltip" :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
+                            <div v-html="tooltip.content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 模型输出平面图 -->
+                <div class="preview-section">
+                    <h2>生成结果</h2>
+                    <div class="generation-result">
+                        <div v-if="generationStatus === 'idle'" class="result-placeholder">
+                            <p>点击「生成平面图」按钮开始生成</p>
+                        </div>
+                        <div v-if="generationStatus === 'generating'" class="result-generating">
+                            <el-progress :percentage="generationProgress" :status="generationProgress === 100 ? 'success' : ''"></el-progress>
+                            <p>{{ generationMessage }}</p>
+                            <el-button type="danger" @click="cancelGeneration">取消生成</el-button>
+                        </div>
+                        <div v-if="generationStatus === 'success'" class="result-success">
+                            <img :src="generatedImageUrl" alt="生成的平面图" class="generated-image">
+                            <el-button type="primary" @click="downloadImage">下载图片</el-button>
+                        </div>
+                        <div v-if="generationStatus === 'failed'" class="result-failed">
+                            <p class="error-message">{{ errorMessage }}</p>
+                            <el-button type="primary" @click="retryGeneration">重试</el-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧区域：边界图配置、JSON结构预览与编辑 -->
+            <div class="right-area">
+                <!-- 边界图配置 -->
+                <div class="config-section">
+                    <h2><span class="section-title">边界图配置</span></h2>
+                    <el-upload
+                        class="upload-demo"
+                        action="#"
+                        :auto-upload="false"
+                        :show-file-list="false"
+                        :on-change="handleBoundaryImageChange"
+                        accept=".png,.jpg,.jpeg"
+                    >
+                        <el-button type="primary">点击上传边界图</el-button>
+                        <template #tip>
+                            <div class="el-upload__tip">支持 PNG、JPG 格式，最大 5MB</div>
+                        </template>
+                    </el-upload>
+                    <div v-if="boundaryImagePreview" class="image-preview">
+                        <img :src="boundaryImagePreview" alt="边界图预览">
+                        <p>文件名: {{ boundaryFileName }}</p>
+                    </div>
+                </div>
+
+                <!-- JSON预览 -->
+                <div class="preview-section json-preview-section">
+                    <h2>JSON 结构预览与编辑</h2>
+                    <div class="json-editor-controls">
+                        <el-button type="primary" size="small" @click="updateFromJson">更新到页面配置</el-button>
+                        <el-button type="info" size="small" @click="formatJson">格式化JSON</el-button>
+                    </div>
+                    <div class="json-preview">
+                        <textarea
+                            v-model="jsonText"
+                            @input="onJsonInput"
+                            class="json-textarea"
+                            placeholder="在此编辑JSON配置..."
+                            spellcheck="false"
+                        ></textarea>
+                        <div v-if="jsonError" class="json-error">
+                            {{ jsonError }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部备注区 -->
+        <div class="footer">
+            <div class="footer-content">
+                <p><strong>房间类型映射：</strong>
+                    <span style="color: #EE4D4D;">1-客厅</span>、<span style="color: #C67C7B;">2-厨房</span>、<span style="color: #FFD274;">3-卧室</span>、<span style="color: #BEBEBE;">4-卫生间</span>、<span style="color: #BFE3E8;">5-阳台</span>、
+                    <span style="color: #7BA779;">6-通道</span>、<span style="color: #E87A90;">7-餐厅</span>、<span style="color: #FF8C69;">8-书房</span>、<span style="color: #1F849B;">10-储藏室</span>、
+                    <span style="color: #727171; font-weight: bold;">15-前门</span>、<span style="color: #D3A2C7; font-weight: bold;">17-内门</span>
+                </p>
+                <p><strong>校验规则：</strong>①面积占比总和 = 1；②拐点数量≥4；③前门仅1个；④内门随连接关系自动生成</p>
+            </div>
+        </div>
+
+        <!-- 弹窗 -->
+        <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
+            <p>{{ dialogMessage }}</p>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="dialogVisible = false">取消</el-button>
+                    <el-button type="primary" @click="confirmDialog">确定</el-button>
+                </span>
+            </template>
+        </el-dialog>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

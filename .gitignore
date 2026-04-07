@@ -1,0 +1,14 @@
+__pycache__/
+*.log
+*.pt
+*.pth
+*.bin
+ckpts/
+*.json
+*.png
+output_user/
+web_log.log
+.DS_Store
+dataprocess/failed_rplan_json/
+*.jpg
+*.npz
